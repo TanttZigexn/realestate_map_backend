@@ -60,15 +60,33 @@ module Api
             radius
           )
 
-          # Filter thêm theo district nếu có để tăng độ chính xác
-          if geocode_result[:address_components] && geocode_result[:address_components][:district]
-            district_name = geocode_result[:address_components][:district]
-            # Normalize district name để match với database
-            scope = scope.where(
-              "address ILIKE ? OR address ILIKE ?",
-              "%#{district_name}%",
-              "%Quận #{district_name}%"
-            )
+          # Filter thêm theo district hoặc region để tăng độ chính xác
+          if geocode_result[:address_components]
+            components = geocode_result[:address_components]
+
+            # Filter theo district nếu có (quận/huyện)
+            if components[:district].present?
+              district_name = components[:district]
+              scope = scope.where(
+                "address ILIKE ? OR address ILIKE ?",
+                "%#{district_name}%",
+                "%Quận #{district_name}%"
+              )
+            # Filter theo region nếu không có district (tỉnh/thành phố)
+            elsif components[:region].present?
+              region_name = components[:region]
+              # Match các thành phố chính: Hà Nội, TP. Hồ Chí Minh, Đà Nẵng
+              city_patterns = {
+                "Hà Nội" => [ "Hà Nội", "Hanoi" ],
+                "Ho Chi Minh City" => [ "Hồ Chí Minh", "Ho Chi Minh", "TP. Hồ Chí Minh" ],
+                "Da Nang" => [ "Đà Nẵng", "Da Nang" ]
+              }
+
+              # Nếu region không phải là các thành phố có data, filter theo region name
+              if city_patterns.values.flatten.none? { |city| region_name.include?(city) }
+                scope = scope.where("address ILIKE ?", "%#{region_name}%")
+              end
+            end
           end
         # Bounding box filter
         elsif bounding_box_params_present?

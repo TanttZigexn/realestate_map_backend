@@ -18,6 +18,10 @@ class GeocodingService
     new.reverse_geocode(latitude, longitude, country: country)
   end
 
+  def self.autocomplete(query, country: "vn", limit: 5)
+    new.autocomplete(query, country: country, limit: limit)
+  end
+
   def geocode(address, country: "vn")
     return nil if address.blank?
 
@@ -159,6 +163,28 @@ class GeocodingService
     raise GeocodingError, "Reverse geocoding failed: #{e.message}"
   end
 
+  public
+
+  def autocomplete(query, country: "vn", limit: 5)
+    return [] if query.blank? || query.length < 2
+
+    # Check cache first
+    cache_key = autocomplete_cache_key_for(query, country, limit)
+    cached_result = Rails.cache.read(cache_key)
+    return cached_result if cached_result.present?
+
+    # Fetch suggestions from Mapbox
+    suggestions = fetch_autocomplete_from_mapbox(query, country, limit)
+
+    # Cache the result (shorter TTL for autocomplete)
+    Rails.cache.write(cache_key, suggestions, expires_in: 1.day)
+
+    suggestions
+  rescue GeocodingError => e
+    Rails.logger.error("Autocomplete error: #{e.message}")
+    []
+  end
+
   private
 
   def parse_reverse_mapbox_response(data)
@@ -213,6 +239,72 @@ class GeocodingService
     rounded_lat = latitude.to_f.round(4)
     rounded_lng = longitude.to_f.round(4)
     "reverse_geocode:#{Digest::MD5.hexdigest("#{rounded_lat}:#{rounded_lng}:#{country}")}"
+  end
+
+  def fetch_autocomplete_from_mapbox(query, country, limit)
+    access_token = ENV.fetch("MAPBOX_ACCESS_TOKEN") do
+      raise GeocodingError, "MAPBOX_ACCESS_TOKEN environment variable is not set"
+    end
+
+    encoded_query = URI.encode_www_form_component(query)
+    url = "#{MAPBOX_BASE_URL}/#{encoded_query}.json"
+    params = {
+      access_token: access_token,
+      country: country,
+      limit: limit,
+      autocomplete: true,  # Enable autocomplete mode
+      types: "address,poi,locality,district,place"  # Limit to relevant types
+    }
+
+    uri = URI(url)
+    uri.query = URI.encode_www_form(params)
+
+    response = Net::HTTP.get_response(uri)
+
+    case response.code.to_i
+    when 200
+      data = JSON.parse(response.body)
+      parse_autocomplete_response(data)
+    when 401
+      raise GeocodingError, "Invalid Mapbox access token"
+    when 429
+      raise GeocodingError, "Mapbox API rate limit exceeded"
+    else
+      raise GeocodingError, "Mapbox API error: #{response.code}"
+    end
+  rescue JSON::ParserError => e
+    raise GeocodingError, "Failed to parse Mapbox response: #{e.message}"
+  rescue Timeout::Error, Net::ReadTimeout, Net::OpenTimeout => e
+    raise GeocodingError, "Mapbox API timeout: #{e.message}"
+  rescue StandardError => e
+    raise GeocodingError, "Autocomplete failed: #{e.message}"
+  end
+
+  def parse_autocomplete_response(data)
+    features = data["features"] || []
+
+    features.map do |feature|
+      coordinates = feature["center"] # [lng, lat]
+
+      # Extract address components
+      components = extract_address_components(feature)
+
+      {
+        id: feature["id"],
+        text: feature["text"],
+        place_name: feature["place_name"],
+        latitude: coordinates[1],
+        longitude: coordinates[0],
+        place_type: feature["place_type"]&.first,
+        address_components: components,
+        relevance: feature["relevance"]  # Mapbox relevance score (0-1)
+      }
+    end
+  end
+
+  def autocomplete_cache_key_for(query, country, limit)
+    normalized_query = query.to_s.strip.downcase
+    "autocomplete:#{Digest::MD5.hexdigest("#{normalized_query}:#{country}:#{limit}")}"
   end
 
   def cache_key_for(address, country)

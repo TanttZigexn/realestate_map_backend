@@ -1,11 +1,12 @@
 Rails.application.routes.draw do
-  mount Rswag::Ui::Engine => '/api-docs'
-  mount Rswag::Api::Engine => '/api-docs'
+  mount Rswag::Ui::Engine => "/api-docs"
+  mount Rswag::Api::Engine => "/api-docs"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   namespace :api do
     namespace :v1 do
       resources :rooms, only: [ :index, :show ]
+      get "addresses/suggest", to: "addresses#suggest"
     end
   end
 
