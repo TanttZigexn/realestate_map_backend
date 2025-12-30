@@ -23,9 +23,7 @@ services:
       args:
         RUBY_VERSION: 3.3.4
     container_name: rental_search_api_web
-    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails server -b 0.0.0.0 -p 3000"
-    env_file:
-      - .env
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails db:prepare && bundle exec rails server -b 0.0.0.0 -p 3000"
     volumes:
       - .:/rails
       - bundle_cache:/usr/local/bundle
@@ -34,12 +32,11 @@ services:
       - "3000:3000"
     environment:
       RAILS_ENV: development
-      DATABASE_URL: postgresql://rental_search_api:postgres@db:5432/rental_search_api_development
       DATABASE_HOST: db
       DATABASE_USER: rental_search_api
       DATABASE_PASSWORD: postgres
       DATABASE_PORT: 5432
-      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:-}
+      RAILS_MASTER_KEY: 8fa11449bb78b7c9f3ce3931d7dc3a9f
       RAILS_MAX_THREADS: 5
     depends_on:
       db:
