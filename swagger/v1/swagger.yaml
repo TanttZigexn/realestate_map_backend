@@ -1,0 +1,271 @@
+---
+openapi: 3.0.1
+info:
+  title: Rental Search API V1
+  version: v1
+  description: API for searching rental rooms on map with PostGIS support
+  contact:
+    name: API Support
+paths:
+  "/api/v1/rooms":
+    get:
+      summary: List rooms
+      tags:
+      - Rooms
+      description: Get a list of rental rooms with optional geographic and attribute
+        filters
+      parameters:
+      - name: address
+        in: query
+        required: false
+        description: Address to search around (e.g., "Quận Đống Đa, Hà Nội")
+        schema:
+          type: string
+      - name: address_radius
+        in: query
+        required: false
+        description: 'Search radius in meters when using address (default: 5000, max:
+          50000)'
+        schema:
+          type: integer
+      - name: north
+        in: query
+        required: false
+        description: Northern latitude for bounding box search
+        schema:
+          type: number
+      - name: south
+        in: query
+        required: false
+        description: Southern latitude for bounding box search
+        schema:
+          type: number
+      - name: east
+        in: query
+        required: false
+        description: Eastern longitude for bounding box search
+        schema:
+          type: number
+      - name: west
+        in: query
+        required: false
+        description: Western longitude for bounding box search
+        schema:
+          type: number
+      - name: lat
+        in: query
+        required: false
+        description: Latitude for radius search
+        schema:
+          type: number
+      - name: lng
+        in: query
+        required: false
+        description: Longitude for radius search
+        schema:
+          type: number
+      - name: radius
+        in: query
+        required: false
+        description: 'Radius in meters for radius search (max: 50000)'
+        schema:
+          type: integer
+      - name: min_price
+        in: query
+        required: false
+        description: Minimum price filter
+        schema:
+          type: integer
+      - name: max_price
+        in: query
+        required: false
+        description: Maximum price filter
+        schema:
+          type: integer
+      - name: min_area
+        in: query
+        required: false
+        description: Minimum area filter (m²)
+        schema:
+          type: number
+      - name: max_area
+        in: query
+        required: false
+        description: Maximum area filter (m²)
+        schema:
+          type: number
+      - name: room_type
+        in: query
+        required: false
+        enum:
+        - room
+        - studio
+        - apartment
+        description: "Filter by room type:\n * `room` \n * `studio` \n * `apartment`
+          \n "
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        enum:
+        - available
+        - rented
+        description: Filter by status
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                example_without_filters:
+                  value:
+                    type: FeatureCollection
+                    features:
+                    - type: Feature
+                      geometry:
+                        type: Point
+                        coordinates:
+                        - 105.8542
+                        - 21.0285
+                      properties:
+                        id: 1
+                        title: Studio cozy gần Hồ Tây
+                        price: 3500000
+                        area: 25.0
+                        address: 100 Đường ABC, Quận Đống Đa, Hà Nội
+                        roomType: studio
+                        status: available
+                        description: Phòng studio tại...
+                        phone: '02438345678'
+                        phoneFormatted: "(024) 3834-5678"
+              schema:
+                "$ref": "#/components/schemas/GeoJSONFeatureCollection"
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/rooms/{id}":
+    get:
+      summary: Show room
+      tags:
+      - Rooms
+      description: Get details of a specific room
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Room ID
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                example_room:
+                  value:
+                    type: Feature
+                    geometry:
+                      type: Point
+                      coordinates:
+                      - 105.8542
+                      - 21.0285
+                    properties:
+                      id: 1
+                      title: Studio cozy gần Hồ Tây
+                      price: 3500000
+                      area: 25.0
+                      address: 100 Đường ABC, Quận Đống Đa, Hà Nội
+                      roomType: studio
+                      status: available
+                      description: Phòng studio tại...
+                      phone: '02438345678'
+                      phoneFormatted: "(024) 3834-5678"
+              schema:
+                "$ref": "#/components/schemas/GeoJSONFeature"
+        '404':
+          description: not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+servers:
+- url: http://localhost:3000
+  description: Development server
+components:
+  schemas:
+    GeoJSONFeature:
+      type: object
+      properties:
+        type:
+          type: string
+          example: Feature
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              example: Point
+            coordinates:
+              type: array
+              items:
+                type: number
+              example:
+              - 105.8542
+              - 21.0285
+        properties:
+          type: object
+          properties:
+            id:
+              type: integer
+            title:
+              type: string
+            price:
+              type: integer
+            area:
+              type: number
+              nullable: true
+            address:
+              type: string
+              nullable: true
+            roomType:
+              type: string
+              enum:
+              - room
+              - studio
+              - apartment
+            status:
+              type: string
+              enum:
+              - available
+              - rented
+            description:
+              type: string
+              nullable: true
+            phone:
+              type: string
+              nullable: true
+            phoneFormatted:
+              type: string
+              nullable: true
+    GeoJSONFeatureCollection:
+      type: object
+      properties:
+        type:
+          type: string
+          example: FeatureCollection
+        features:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GeoJSONFeature"
+    Error:
+      type: object
+      properties:
+        error:
+          type: string

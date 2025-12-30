@@ -48,7 +48,19 @@ Hoặc sử dụng Docker Compose:
 docker-compose up
 ```
 
-## 📡 API Endpoints
+## 📡 API Documentation
+
+### Swagger UI
+Interactive API documentation is available at:
+```
+http://localhost:3000/api-docs
+```
+
+The Swagger UI provides:
+- Interactive API testing
+- Complete endpoint documentation
+- Request/response examples
+- Schema definitions
 
 ### Base URL
 ```
