@@ -6,7 +6,7 @@ module Api
       def index
         @rooms = Room.all
 
-        # Apply geographic filters (bounding box OR radius)
+        # Apply geographic filters (address > bounding box > radius)
         @rooms = apply_geo_filters(@rooms)
 
         # Apply attribute filters
@@ -19,6 +19,10 @@ module Api
         render json: Room.to_geojson_feature_collection(@rooms)
       rescue ArgumentError => e
         render json: { error: e.message }, status: :bad_request
+      rescue GeocodingService::GeocodingError => e
+        render json: { error: e.message }, status: :bad_request
+      rescue GeocodingService::AddressNotFoundError => e
+        render json: { error: "Address not found: #{params[:address]}" }, status: :bad_request
       end
 
       def show
@@ -31,8 +35,18 @@ module Api
       private
 
       def apply_geo_filters(scope)
-        # Bounding box filter (priority over radius)
-        if bounding_box_params_present?
+        # Address search (highest priority)
+        if address_params_present?
+          geocode_result = geocode_address
+          radius = params[:address_radius].present? ? params[:address_radius].to_f : 5000.0
+          validate_radius_value!(radius)
+          scope = scope.within_radius(
+            geocode_result[:latitude],
+            geocode_result[:longitude],
+            radius
+          )
+        # Bounding box filter
+        elsif bounding_box_params_present?
           validate_bounding_box_params!
           scope = scope.within_bounds(
             params[:north].to_f,
@@ -80,8 +94,26 @@ module Api
         params[:east].present? && params[:west].present?
       end
 
+      def address_params_present?
+        params[:address].present?
+      end
+
       def radius_params_present?
         params[:lat].present? && params[:lng].present? && params[:radius].present?
+      end
+
+      def geocode_address
+        country = params[:country] || "vn"
+        result = GeocodingService.geocode(params[:address], country: country)
+
+        raise GeocodingService::AddressNotFoundError, "Address not found" if result.nil?
+
+        result
+      end
+
+      def validate_radius_value!(radius)
+        raise ArgumentError, "Invalid radius: must be positive" if radius <= 0
+        raise ArgumentError, "Radius too large: max 50000 meters" if radius > 50000
       end
 
       def validate_bounding_box_params!
