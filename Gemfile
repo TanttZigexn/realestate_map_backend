@@ -20,6 +20,16 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+gem "rack-cors"
+
+# PostGIS support for geographic data
+gem "rgeo"
+gem "rgeo-geojson"
+gem "activerecord-postgis-adapter"
+
+# Pagination
+gem "kaminari"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
