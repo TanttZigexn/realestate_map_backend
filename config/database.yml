@@ -84,9 +84,34 @@ test:
 # for a full overview on how database connection configuration can be specified.
 #
 production:
-  <<: *default
-  database: rental_search_api_production
-  username: <%= ENV.fetch("POSTGRES_USER") { "rental_search_api" } %>
-  password: <%= ENV["POSTGRES_PASSWORD"] %>
-  host: <%= ENV.fetch("DATABASE_HOST") { "db" } %>
-  port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
+  primary:
+    <<: *default
+    database: rental_search_api_production
+    username: <%= ENV.fetch("POSTGRES_USER") { "rental_search_api" } %>
+    password: <%= ENV["POSTGRES_PASSWORD"] %>
+    host: <%= ENV.fetch("DATABASE_HOST") { "db" } %>
+    port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
+  cache:
+    <<: *default
+    database: rental_search_api_production
+    username: <%= ENV.fetch("POSTGRES_USER") { "rental_search_api" } %>
+    password: <%= ENV["POSTGRES_PASSWORD"] %>
+    host: <%= ENV.fetch("DATABASE_HOST") { "db" } %>
+    port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *default
+    database: rental_search_api_production
+    username: <%= ENV.fetch("POSTGRES_USER") { "rental_search_api" } %>
+    password: <%= ENV["POSTGRES_PASSWORD"] %>
+    host: <%= ENV.fetch("DATABASE_HOST") { "db" } %>
+    port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *default
+    database: rental_search_api_production
+    username: <%= ENV.fetch("POSTGRES_USER") { "rental_search_api" } %>
+    password: <%= ENV["POSTGRES_PASSWORD"] %>
+    host: <%= ENV.fetch("DATABASE_HOST") { "db" } %>
+    port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
+    migrations_paths: db/cable_migrate
