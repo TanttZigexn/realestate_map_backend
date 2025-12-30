@@ -15,15 +15,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_30_100750) do
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
 
-# Could not dump table "rooms" because of following StandardError
-#   Unknown type 'geography' for column 'location'
-
-
-  create_table "spatial_ref_sys", primary_key: "srid", id: :integer, default: nil, force: :cascade do |t|
-    t.string "auth_name", limit: 256
-    t.integer "auth_srid"
-    t.string "srtext", limit: 2048
-    t.string "proj4text", limit: 2048
-    t.check_constraint "srid > 0 AND srid <= 998999", name: "spatial_ref_sys_srid_check"
+  create_table "rooms", force: :cascade do |t|
+    t.string "title", null: false
+    t.integer "price", null: false
+    t.float "area"
+    t.text "address"
+    t.float "latitude", null: false
+    t.float "longitude", null: false
+    t.string "room_type"
+    t.string "status", default: "available"
+    t.text "description"
+    t.string "phone"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.st_point "location", geographic: true, srid: 4326
+    t.index ["location"], name: "index_rooms_on_location", using: :gist
+    t.index ["price"], name: "index_rooms_on_price"
+    t.index ["room_type"], name: "index_rooms_on_room_type"
+    t.index ["status"], name: "index_rooms_on_status"
   end
 end
