@@ -34,10 +34,10 @@ RSpec.describe 'Rooms API', type: :request, openapi_spec: 'v1/swagger.yaml' do
       parameter name: 'max_area', in: :query, type: :number, required: false,
                 description: 'Maximum area filter (m²)'
       parameter name: 'room_type', in: :query, type: :string, required: false,
-                enum: ['room', 'studio', 'apartment'],
+                enum: [ 'room', 'studio', 'apartment' ],
                 description: 'Filter by room type'
       parameter name: 'status', in: :query, type: :string, required: false,
-                enum: ['available', 'rented'],
+                enum: [ 'available', 'rented' ],
                 description: 'Filter by status'
 
       response '200', 'successful' do
@@ -52,7 +52,7 @@ RSpec.describe 'Rooms API', type: :request, openapi_spec: 'v1/swagger.yaml' do
               type: 'Feature',
               geometry: {
                 type: 'Point',
-                coordinates: [105.8542, 21.0285]
+                coordinates: [ 105.8542, 21.0285 ]
               },
               properties: {
                 id: 1,
@@ -108,7 +108,7 @@ RSpec.describe 'Rooms API', type: :request, openapi_spec: 'v1/swagger.yaml' do
           type: 'Feature',
           geometry: {
             type: 'Point',
-            coordinates: [105.8542, 21.0285]
+            coordinates: [ 105.8542, 21.0285 ]
           },
           properties: {
             id: 1,
@@ -144,4 +144,3 @@ RSpec.describe 'Rooms API', type: :request, openapi_spec: 'v1/swagger.yaml' do
     end
   end
 end
-
