@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :rooms, only: [:index, :show]
+      resources :rooms, only: [ :index, :show ]
     end
   end
 
@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Health check
-  get "/health", to: proc { [200, {}, ["OK"]] }
+  get "/health", to: proc { [ 200, {}, [ "OK" ] ] }
 
   # Defines the root path route ("/")
   # root "posts#index"
