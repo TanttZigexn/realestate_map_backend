@@ -12,6 +12,16 @@ module Api
         # Apply attribute filters
         @rooms = apply_attribute_filters(@rooms)
 
+        # Sort by distance if address search was used
+        if address_params_present? && @geocoded_lat && @geocoded_lng
+          # Use sanitize_sql_array to safely interpolate values
+          distance_sql = Room.sanitize_sql_array([
+            "rooms.*, ST_Distance(location, ST_MakePoint(?, ?)::geography) as distance",
+            @geocoded_lng.to_f, @geocoded_lat.to_f
+          ])
+          @rooms = @rooms.select(distance_sql).order("distance ASC")
+        end
+
         # Limit results for performance
         @rooms = @rooms.limit(MAX_RESULTS)
 
@@ -38,6 +48,10 @@ module Api
         # Address search (highest priority)
         if address_params_present?
           geocode_result = geocode_address
+          # Store geocoded coordinates for sorting
+          @geocoded_lat = geocode_result[:latitude]
+          @geocoded_lng = geocode_result[:longitude]
+
           radius = params[:address_radius].present? ? params[:address_radius].to_f : 5000.0
           validate_radius_value!(radius)
           scope = scope.within_radius(

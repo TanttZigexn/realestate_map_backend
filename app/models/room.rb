@@ -43,7 +43,7 @@ class Room < ApplicationRecord
 
   # GeoJSON conversion (Mapbox standard format)
   def to_geojson_feature
-    {
+    feature = {
       type: "Feature",
       geometry: {
         type: "Point",
@@ -62,6 +62,13 @@ class Room < ApplicationRecord
         phoneFormatted: phone_formatted
       }
     }
+
+    # Add distance if available (from address search)
+    if respond_to?(:distance) && distance.present?
+      feature[:properties][:distance] = distance.round(0) # in meters
+    end
+
+    feature
   end
 
   def self.to_geojson_feature_collection(rooms)
