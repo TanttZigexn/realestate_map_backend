@@ -24,7 +24,8 @@ RUN apt-get update -qq && \
 # Set development environment
 ENV RAILS_ENV="development" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT=""
+    BUNDLE_WITHOUT="" \
+    PATH="/rails/bin:$PATH"
 
 # Install gems
 COPY Gemfile Gemfile.lock ./
@@ -32,6 +33,9 @@ RUN bundle install
 
 # Copy application code
 COPY . .
+
+# Generate binstubs so we can use rails, rake, etc. directly
+RUN bundle binstubs --all
 
 # Create necessary directories
 RUN mkdir -p tmp/pids log storage

@@ -35,6 +35,10 @@ services:
     environment:
       RAILS_ENV: development
       DATABASE_URL: postgresql://rental_search_api:postgres@db:5432/rental_search_api_development
+      DATABASE_HOST: db
+      DATABASE_USER: rental_search_api
+      DATABASE_PASSWORD: postgres
+      DATABASE_PORT: 5432
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:-}
       RAILS_MAX_THREADS: 5
     depends_on:
