@@ -94,7 +94,8 @@ class GeocodingService
       latitude: coordinates[1],
       longitude: coordinates[0],
       formatted_address: feature.dig("place_name"),
-      place_type: feature.dig("place_type", 0)
+      place_type: feature.dig("place_type", 0),
+      address_components: extract_address_components(feature)
     }
   end
 
@@ -193,6 +194,15 @@ class GeocodingService
       elsif id.include?("neighborhood")
         components[:neighborhood] = text
       end
+    end
+
+    # Fallback: Extract district from formatted_address if not in context
+    # Example: "Bình Thạnh, Ho Chi Minh City, Vietnam" -> "Bình Thạnh"
+    if components[:district].blank? && feature["place_type"]&.first == "locality"
+      place_name = feature.dig("place_name") || feature.dig("text", "")
+      # Extract first part before comma (usually district name)
+      district_match = place_name.match(/^([^,]+)/)
+      components[:district] = district_match[1].strip if district_match
     end
 
     components

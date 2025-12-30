@@ -59,6 +59,17 @@ module Api
             geocode_result[:longitude],
             radius
           )
+
+          # Filter thêm theo district nếu có để tăng độ chính xác
+          if geocode_result[:address_components] && geocode_result[:address_components][:district]
+            district_name = geocode_result[:address_components][:district]
+            # Normalize district name để match với database
+            scope = scope.where(
+              "address ILIKE ? OR address ILIKE ?",
+              "%#{district_name}%",
+              "%Quận #{district_name}%"
+            )
+          end
         # Bounding box filter
         elsif bounding_box_params_present?
           validate_bounding_box_params!
