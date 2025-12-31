@@ -107,6 +107,106 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/Error"
+  "/api/v1/room_images/random":
+    get:
+      summary: Get random room image
+      tags:
+      - Room Images
+      description: Get a random room image URL based on room type (room, studio, apartment)
+      parameters:
+      - name: type
+        in: query
+        type: string
+        required: false
+        description: Room type (room, studio, apartment). If not provided, returns
+          random image from all types.
+        schema:
+          type: string
+          enum:
+          - room
+          - studio
+          - apartment
+      - name: room_type
+        in: query
+        type: string
+        required: false
+        description: Alternative parameter name for room type (alias of type)
+        schema:
+          type: string
+          enum:
+          - room
+          - studio
+          - apartment
+      responses:
+        '200':
+          description: successful - no type specified
+          content:
+            application/json:
+              examples:
+                example_random_image:
+                  value:
+                    image_url: http://ecogreen-saigon.vn/uploads/phong-tro-la-loai-hinh-nha-o-pho-bien-gia-re-tien-loi-cho-sinh-vien-va-nguoi-di-lam.png
+                    room_type: room
+                    timestamp: '2024-01-15T10:30:00Z'
+              schema:
+                type: object
+                properties:
+                  image_url:
+                    type: string
+                    example: http://ecogreen-saigon.vn/uploads/phong-tro-la-loai-hinh-nha-o-pho-bien-gia-re-tien-loi-cho-sinh-vien-va-nguoi-di-lam.png
+                  room_type:
+                    type: string
+                    nullable: true
+                    example: room
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2024-01-15T10:30:00Z'
+                required:
+                - image_url
+                - timestamp
+  "/api/v1/room_images/list":
+    get:
+      summary: List all room images by type
+      tags:
+      - Room Images
+      description: Get all available room images organized by room type. Useful for
+        debugging or getting all image URLs.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                example_list_images:
+                  value:
+                    images_by_type:
+                      room:
+                      - http://ecogreen-saigon.vn/uploads/phong-tro-la-loai-hinh-nha-o-pho-bien-gia-re-tien-loi-cho-sinh-vien-va-nguoi-di-lam.png
+                      studio: []
+                      apartment: []
+              schema:
+                type: object
+                properties:
+                  images_by_type:
+                    type: object
+                    properties:
+                      room:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                        - http://ecogreen-saigon.vn/uploads/phong-tro-la-loai-hinh-nha-o-pho-bien-gia-re-tien-loi-cho-sinh-vien-va-nguoi-di-lam.png
+                      studio:
+                        type: array
+                        items:
+                          type: string
+                      apartment:
+                        type: array
+                        items:
+                          type: string
+                required:
+                - images_by_type
   "/api/v1/rooms":
     get:
       summary: List rooms

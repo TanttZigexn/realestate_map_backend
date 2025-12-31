@@ -73,8 +73,8 @@ RSpec.configure do |config|
               features: {
                 type: 'array',
                 items: { '$ref' => '#/components/schemas/GeoJSONFeature' }
-              }
             }
+          }
           },
           Error: {
             type: 'object',
