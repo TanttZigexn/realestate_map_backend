@@ -9,7 +9,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     # In development, allow all origins
     # In production, specify your frontend domain
-    origins Rails.env.development? ? "*" : ENV.fetch("ALLOWED_ORIGINS", "https://yourdomain.com")
+    origins Rails.env.development? ? "*" : ENV.fetch("ALLOWED_ORIGINS", "https://hkt-team13.zigexn.vn")
 
     resource "*",
       headers: :any,
