@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: rental_search_api_db_prod
+    env_file:
+      - .env.production
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rental_search_api"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        RUBY_VERSION: 3.3.4
+        RAILS_ENV: production
+    container_name: rental_search_api_web_prod
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails db:prepare && bundle exec rails server -b 0.0.0.0 -p 3000"
+    env_file:
+      - .env.production
+    ports:
+      - "3000:3000"
+    environment:
+      RAILS_ENV: production
+      RAILS_SERVE_STATIC_FILES: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    volumes:
+      - storage_data:/rails/storage
+      - log_data:/rails/log
+
+volumes:
+  postgres_data:
+  storage_data:
+  log_data:
