@@ -13,12 +13,6 @@ RSpec.describe 'Room Images API', type: :request, openapi_spec: 'v1/swagger.yaml
                   type: :string,
                   enum: ['room', 'studio', 'apartment']
                 }
-      parameter name: 'room_type', in: :query, type: :string, required: false,
-                description: 'Alternative parameter name for room type (alias of type)',
-                schema: {
-                  type: :string,
-                  enum: ['room', 'studio', 'apartment']
-                }
 
       response '200', 'successful' do
         schema type: :object,
@@ -27,7 +21,7 @@ RSpec.describe 'Room Images API', type: :request, openapi_spec: 'v1/swagger.yaml
                    type: :string,
                    example: 'http://ecogreen-saigon.vn/uploads/phong-tro-la-loai-hinh-nha-o-pho-bien-gia-re-tien-loi-cho-sinh-vien-va-nguoi-di-lam.png'
                  },
-                 room_type: {
+                 type: {
                    type: :string,
                    nullable: true,
                    example: 'room'
@@ -44,7 +38,7 @@ RSpec.describe 'Room Images API', type: :request, openapi_spec: 'v1/swagger.yaml
 
         example 'application/json', :example_random_image, {
           image_url: 'http://ecogreen-saigon.vn/uploads/phong-tro-la-loai-hinh-nha-o-pho-bien-gia-re-tien-loi-cho-sinh-vien-va-nguoi-di-lam.png',
-          room_type: 'room',
+          type: 'room',
           timestamp: '2024-01-15T10:30:00Z'
         }
 
@@ -61,7 +55,7 @@ RSpec.describe 'Room Images API', type: :request, openapi_spec: 'v1/swagger.yaml
         schema type: :object,
                properties: {
                  image_url: { type: :string },
-                 room_type: { type: :string, nullable: true },
+                 type: { type: :string, nullable: true },
                  timestamp: { type: :string, format: :'date-time' }
                }
 
