@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :rooms, only: [ :index, :show ]
+      resources :room_viewings, only: [ :index, :show, :create, :update ]
       get "addresses/suggest", to: "addresses#suggest"
       get "room_images/random", to: "room_images#random"
       get "room_images/list", to: "room_images#list"

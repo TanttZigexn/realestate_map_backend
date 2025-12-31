@@ -1,4 +1,6 @@
 class Room < ApplicationRecord
+  has_many :room_viewings, dependent: :destroy
+
   # Validations
   validates :title, presence: true
   validates :price, presence: true, numericality: { greater_than: 0 }
